@@ -96,6 +96,7 @@ extern "C" {
 #define MAX_SFCCHEAT_NAME 48
 #define MAX_CHEATS_T 800
 
+
 struct SCheat
 {
     uint32  address;
@@ -121,6 +122,8 @@ struct SCheatData
     uint32	    SRAM_BITS [0x10000 >> 3];
     uint32	    IRAM_BITS [0x2000 >> 3];
 };
+
+extern SCheatData Cheat;
 
 typedef enum
 {

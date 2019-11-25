@@ -214,7 +214,7 @@ uint32 HIGH_BITS_SHIFTED_TWO_MASK = 0;
 uint32 current_graphic_format = RGB565;
 #endif
 
-struct SCheatData Cheat;
+//struct SCheatData Cheat;
 
 // Define NO_VOLATILE_SOUND if you're always reading or writing sound from one
 // thread or one co-routine. If you're using interrupts or a thread, sound must

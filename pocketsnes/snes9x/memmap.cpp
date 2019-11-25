@@ -880,7 +880,7 @@ again:
     InitROM (Tales);
     S9xLoadCheatFile (S9xGetFilename(".cht"));
     S9xInitCheatData ();
-	S9xApplyCheats ();
+	//S9xApplyCheats ();
 	
     S9xReset ();
 	
@@ -1129,7 +1129,7 @@ bool8 CMemory::LoadMulti (const char *basename, const char *slot1name, const cha
     InitROM (FALSE);
     S9xLoadCheatFile (S9xGetFilename(".cht"));
     S9xInitCheatData ();
-    S9xApplyCheats ();
+    //S9xApplyCheats ();
 	
     S9xReset ();
 	
