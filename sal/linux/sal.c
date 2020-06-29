@@ -36,7 +36,12 @@ static u32 sal_Input(int held)
 		switch (event.type) {
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
+#ifdef RG350
 			case SDLK_HOME:
+#endif				
+#ifdef PG
+			case SDLK_RCTRL:
+#endif
 				extraKeys |= SAL_INPUT_MENU;
 				break;
 			}
@@ -59,8 +64,12 @@ static u32 sal_Input(int held)
 	if ( keystate[SDLK_DOWN] )		inputHeld |= SAL_INPUT_DOWN;
 	if ( keystate[SDLK_LEFT] )		inputHeld |= SAL_INPUT_LEFT;
 	if ( keystate[SDLK_RIGHT] )		inputHeld |= SAL_INPUT_RIGHT;
+#ifdef RG350
 	if ( keystate[SDLK_HOME] )		inputHeld |= SAL_INPUT_MENU;
-
+#endif
+#ifdef PG
+	if ( keystate[SDLK_RCTRL] )		inputHeld |= SAL_INPUT_MENU;
+#endif
 	mInputRepeat = inputHeld;
 	return inputHeld | extraKeys;
 }
