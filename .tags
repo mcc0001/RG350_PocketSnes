@@ -1,0 +1,19 @@
+!_TAG_FILE_SORTED	2	/0=unsorted, 1=sorted, 2=foldcase/
+CC	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^CC  := $(CROSS_COMPILE)gcc$/;"	m	language:Make
+CFLAGS	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^CFLAGS = $(INCLUDE) -DRC_OPTIMIZED -DGCW_ZERO -DRG350 -D__LINUX__ -D__DINGUX__ -DFOREVER_16_BIT -DFOREVER_16_BIT_SOUND $(SDL_CFLAGS)$/;"	m	language:Make
+CROSS_COMPILE	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^CROSS_COMPILE ?= \/opt\/gcw0-toolchain\/usr\/bin\/mipsel-linux-$/;"	m	language:Make
+CXX	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^CXX := $(CROSS_COMPILE)g++$/;"	m	language:Make
+CXXFLAGS	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^CXXFLAGS = $(CFLAGS) -std=gnu++03 -fno-exceptions -fno-rtti -fno-math-errno -fno-threadsafe-statics$/;"	m	language:Make
+INCLUDE	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^INCLUDE = -I pocketsnes \\$/;"	m	language:Make
+LDFLAGS	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^LDFLAGS = $(CXXFLAGS) -lz -lpng $(SDL_LIBS) -Wl,--as-needed$/;"	m	language:Make
+OBJS	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^OBJS    = $(OBJ_CPP) $(OBJ_C)$/;"	m	language:Make
+OBJ_C	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^OBJ_C   = $(patsubst %.c, %.o, $(SRC_C))$/;"	m	language:Make
+OBJ_CPP	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^OBJ_CPP = $(patsubst %.cpp, %.o, $(SRC_CPP))$/;"	m	language:Make
+SDL_CFLAGS	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^SDL_CFLAGS := $(shell $(SYSROOT)\/usr\/bin\/sdl-config --cflags)$/;"	m	language:Make
+SDL_LIBS	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^SDL_LIBS := $(shell $(SYSROOT)\/usr\/bin\/sdl-config --libs)$/;"	m	language:Make
+SOURCE	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^SOURCE = pocketsnes\/snes9x menu sal\/linux sal$/;"	m	language:Make
+SRC_C	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^SRC_C   = $(foreach dir, $(SOURCE), $(wildcard $(dir)\/*.c))$/;"	m	language:Make
+SRC_CPP	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^SRC_CPP = $(foreach dir, $(SOURCE), $(wildcard $(dir)\/*.cpp))$/;"	m	language:Make
+STRIP	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^STRIP := $(CROSS_COMPILE)strip$/;"	m	language:Make
+SYSROOT	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^SYSROOT := $(shell $(CC) --print-sysroot)$/;"	m	language:Make
+TARGET	/home/makchiu/makchiu/mips/RG350-PocketSNES/Makefile.rg350	/^TARGET = .\/dist\/PocketSNES.dge$/;"	m	language:Make
