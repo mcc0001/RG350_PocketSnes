@@ -16,6 +16,8 @@
 
 #define SNES_SCREEN_WIDTH  256
 #define SNES_SCREEN_HEIGHT 192
+extern struct InternalPPU IPPU;
+extern int currentWidth;
 
 #define FIXED_POINT 0x10000UL
 #define FIXED_POINT_REMAINDER 0xffffUL
@@ -178,18 +180,18 @@ bool8_32 S9xDeinitUpdate (int Width, int Height, bool8_32)
 	switch (mMenuOptions.fullScreen)
 	{
 		case 0: /* No scaling */
-		// case 3: /* Hardware scaling */
+		 case 3: /* Hardware scaling */
 		{
 			u32 h = PAL ? SNES_HEIGHT_EXTENDED : SNES_HEIGHT;
 			u32 y, pitch = sal_VideoGetPitch();
-			u8 *src = (u8*) IntermediateScreen, *dst = (u8*) sal_VideoGetBuffer()
-				+ ((sal_VideoGetWidth() - SNES_WIDTH) / 2) * sizeof(u16)
+			u8 *src = (u8*) GFX.Screen, *dst = (u8*) sal_VideoGetBuffer()
+				+ ((sal_VideoGetWidth() - 512) / 2) * sizeof(u16)
 				+ ((sal_VideoGetHeight() - h) / 2) * pitch;
 			for (y = 0; y < h; y++)
 			{
-				memmove(dst, src, SNES_WIDTH * sizeof(u16));
-				src += SNES_WIDTH * sizeof(u16);
-				dst += pitch;
+				memmove(dst, src, 512 * sizeof(u16));
+				src += 512 * sizeof(u16);
+				dst += pitch ;
 			}
 			break;
 		}
@@ -567,7 +569,7 @@ int SnesInit()
 	Settings.SixteenBit = TRUE;
 #endif
 	
-	Settings.SupportHiRes = FALSE;
+	Settings.SupportHiRes = TRUE;
 	Settings.NetPlay = FALSE;
 	Settings.ServerName [0] = 0;
 	Settings.AutoSaveDelay = 1;
@@ -591,7 +593,7 @@ int SnesInit()
 #endif
 	GFX.Screen = (u8*) IntermediateScreen; /* replacement needed after loading the saved states menu */
 
-	GFX.RealPitch = GFX.Pitch = 256 * sizeof(u16);
+	GFX.RealPitch = GFX.Pitch = 512 * sizeof(u16);
 	
 	GFX.SubScreen = (uint8 *)malloc(GFX.RealPitch * 480 * 2); 
 	GFX.ZBuffer =  (uint8 *)malloc(GFX.RealPitch * 480 * 2); 

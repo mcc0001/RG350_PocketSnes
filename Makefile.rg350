@@ -23,6 +23,7 @@ CFLAGS += -O3 -fdata-sections -ffunction-sections -mips32r2 -mno-mips16 -fomit-f
 CFLAGS += -fno-common -Wno-write-strings -Wno-sign-compare -ffast-math -ftree-vectorize
 CFLAGS += -funswitch-loops -fno-strict-aliasing
 CFLAGS += -DFAST_LSB_WORD_ACCESS -DNO_ROM_BROWSER
+CFLAGS += -DMAKLOG
 ifdef PROFILE_GEN
 CFLAGS += -fprofile-generate -fprofile-dir=/media/data/profile/pocketsnes
 else

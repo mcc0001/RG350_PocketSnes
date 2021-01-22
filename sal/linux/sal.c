@@ -187,11 +187,15 @@ u32 sal_VideoGetPitch()
 	return mScreen->pitch;
 }
 
+extern int currentWidth;
+
+void update
+
 void sal_VideoEnterGame(u32 fullscreenOption, u32 pal, u32 refreshRate)
 {
 #ifdef GCW_ZERO
 	/* Copied from C++ headers which we can't include in C */
-	unsigned int Width = 256 /* SNES_WIDTH */,
+	unsigned int Width = 512 /* SNES_WIDTH */,
 	             Height = pal ? 239 /* SNES_HEIGHT_EXTENDED */ : 224 /* SNES_HEIGHT */;
 	if (fullscreenOption != 3)
 	{

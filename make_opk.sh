@@ -1,5 +1,11 @@
 #!/bin/sh
 
+make -f Makefile.rg350 $1
+
+if [ $1 = "clean" ];then
+    return 0;
+fi
+
 cd $(dirname $0)
 
 OPK_NAME=PocketSNES.opk

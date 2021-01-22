@@ -126,6 +126,8 @@ extern struct SLineMatrixData LineMatrixData [240];
 
 extern uint8  Mode7Depths [2];
 
+int currentWidth = 256;
+
 #define CLIP_10_BIT_SIGNED(a) \
 	((a) & ((1 << 10) - 1)) + (((((a) & (1 << 13)) ^ (1 << 13)) - (1 << 13)) >> 3)
 
@@ -665,6 +667,7 @@ void S9xStartScreenRefresh ()
 			IPPU.Interlace = (Memory.FillRAM[0x2133] & 1);
 		if (Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace))
 		{
+
 			IPPU.RenderedScreenWidth = 512;
 			IPPU.DoubleWidthPixels = TRUE;
 			IPPU.HalfWidthPixels = FALSE;
