@@ -13,6 +13,7 @@
 #include "soundux.h"
 #include "snapshot.h"
 #include "scaler.h"
+#include <iostream>
 
 #define SNES_SCREEN_WIDTH  256
 #define SNES_SCREEN_HEIGHT 192
@@ -177,7 +178,14 @@ bool8_32 S9xDeinitUpdate (int Width, int Height, bool8_32)
 		LastPAL = PAL;
 	}
 
-	switch (mMenuOptions.fullScreen)
+    if (mScreen->w != IPPU.RenderedScreenWidth ){
+        updateWindowSize(IPPU.RenderedScreenWidth, 240);
+    }
+
+#ifdef MAKLOG
+//std::cout << "main.cpp:186" << " "  << "update resolution end!!" << std::endl;
+#endif
+    switch (mMenuOptions.fullScreen)
 	{
 		case 0: /* No scaling */
 		 case 3: /* Hardware scaling */
@@ -185,12 +193,12 @@ bool8_32 S9xDeinitUpdate (int Width, int Height, bool8_32)
 			u32 h = PAL ? SNES_HEIGHT_EXTENDED : SNES_HEIGHT;
 			u32 y, pitch = sal_VideoGetPitch();
 			u8 *src = (u8*) GFX.Screen, *dst = (u8*) sal_VideoGetBuffer()
-				+ ((sal_VideoGetWidth() - 512) / 2) * sizeof(u16)
+				+ ((sal_VideoGetWidth() - mScreen->w) / 2) * sizeof(u16)
 				+ ((sal_VideoGetHeight() - h) / 2) * pitch;
 			for (y = 0; y < h; y++)
 			{
-				memmove(dst, src, 512 * sizeof(u16));
-				src += 512 * sizeof(u16);
+				memmove(dst, src, mScreen->w * sizeof(u16));
+				src += mScreen->w * sizeof(u16);
 				dst += pitch ;
 			}
 			break;
@@ -593,7 +601,7 @@ int SnesInit()
 #endif
 	GFX.Screen = (u8*) IntermediateScreen; /* replacement needed after loading the saved states menu */
 
-	GFX.RealPitch = GFX.Pitch = 512 * sizeof(u16);
+	GFX.RealPitch = GFX.Pitch = 256 * sizeof(u16);
 	
 	GFX.SubScreen = (uint8 *)malloc(GFX.RealPitch * 480 * 2); 
 	GFX.ZBuffer =  (uint8 *)malloc(GFX.RealPitch * 480 * 2); 
@@ -704,7 +712,7 @@ int mainEntry(int argc, char* argv[])
 	sal_Init();
 	sal_VideoInit(16);
 
-	mRomName[0]=0;
+    mRomName[0]=0;
 	if (argc >= 2) 
  		strcpy(mRomName, argv[1]); // Record ROM name
 

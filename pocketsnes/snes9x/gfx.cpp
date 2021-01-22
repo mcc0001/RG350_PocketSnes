@@ -97,6 +97,7 @@
 #include "apu.h"
 #include "cheats.h"
 #include "screenshot.h"
+#include <sal.h>
 
 #define M7 19
 #define M8 19
@@ -284,6 +285,7 @@ void DrawLargePixel16Sub (uint32 Tile, uint32 Offset,
 void DrawLargePixel16Sub1_2 (uint32 Tile, uint32 Offset,
 			     uint32 StartPixel, uint32 Pixels,
 			     uint32 StartLine, uint32 LineCount);
+
 
 bool8 S9xGraphicsInit ()
 {
@@ -630,6 +632,7 @@ void S9xGraphicsDeinit (void)
     }
 }
 
+extern void updateWindowSize(int width, int height);
 void S9xBuildDirectColourMaps ()
 {
     for (uint32 p = 0; p < 8; p++)
@@ -667,6 +670,9 @@ void S9xStartScreenRefresh ()
 			IPPU.Interlace = (Memory.FillRAM[0x2133] & 1);
 		if (Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace))
 		{
+
+//		    updateWindowSize(512, 240);
+
 
 			IPPU.RenderedScreenWidth = 512;
 			IPPU.DoubleWidthPixels = TRUE;
@@ -713,6 +719,7 @@ void S9xStartScreenRefresh ()
 		}
 		else
 		{
+//            updateWindowSize(256, 240);
 		    IPPU.RenderedScreenWidth = 256;
 		    IPPU.RenderedScreenHeight = PPU.ScreenHeight;
 		    IPPU.DoubleWidthPixels = FALSE;
@@ -786,6 +793,7 @@ void RenderLine (uint8 C)
 	}
 }
 
+extern SDL_Surface *mScreen;
 void S9xEndScreenRefresh ()
 {
     IPPU.HDMAStarted = FALSE;
@@ -3679,8 +3687,12 @@ void S9xUpdateScreen ()
     {
 		if (PPU.BGMode == 5 || PPU.BGMode == 6|| IPPU.Interlace)
 		{
+//		    updateWindowSize(512, 240);
 			IPPU.RenderedScreenWidth = 512;
 			x2 = 2;
+		} else {
+//            updateWindowSize(256, 240);
+
 		}
 
 		if (IPPU.DoubleHeightPixels)

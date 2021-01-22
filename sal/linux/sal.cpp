@@ -3,10 +3,12 @@
 #include <SDL.h>
 #include <sys/time.h>
 #include "sal.h"
+#include "memmap.h"
+#include <iostream>
 
 #define PALETTE_BUFFER_LENGTH	256*2*4
 #define SNES_WIDTH  256
-#define SNES_HEIGHT 239
+//#define SNES_HEIGHT 239
 
 SDL_Surface *mScreen = NULL;
 static u32 mSoundThreadFlag=0;
@@ -134,7 +136,8 @@ u32 sal_CpuSpeedPreviousFast(u32 currSpeed)
 s32 sal_Init(void)
 {
 	setenv("SDL_NOMOUSE", "1", 1);
-	if( SDL_Init( SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_JOYSTICK ) == -1 )
+//    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE) == -1)
+	if( SDL_Init( SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_JOYSTICK| SDL_INIT_NOPARACHUTE) == -1 )
 	{
 		return SAL_ERROR;
 	}
@@ -154,7 +157,7 @@ u32 sal_VideoInit(u32 bpp)
 	mBpp=bpp;
 
 	//Set up the screen
-	mScreen = SDL_SetVideoMode(SAL_SCREEN_WIDTH, SAL_SCREEN_HEIGHT, bpp, SDL_HWSURFACE | 
+	mScreen = SDL_SetVideoMode(SAL_SCREEN_WIDTH, SAL_SCREEN_HEIGHT, bpp, SDL_HWSURFACE |
 #ifdef SDL_TRIPLEBUF
 	SDL_TRIPLEBUF
 #else
@@ -163,11 +166,17 @@ u32 sal_VideoInit(u32 bpp)
 	);
 
 	//If there was an error in setting up the screen
-	if( mScreen == NULL )
-	{
-	sal_LastErrorSet("SDL_SetVideoMode failed");
-	return SAL_ERROR;
-	}
+//	if( mScreen == NULL )
+//	{
+//	sal_LastErrorSet("SDL_SetVideoMode failed");
+//	return SAL_ERROR;
+//	}
+    if (!mScreen) {
+        #ifdef MAKLOG
+        std::cout << "sal.cpp:176" << " "  << "setVideoMode fail : " << SDL_GetError() << std::endl;
+        #endif
+        exit(0);
+    }
 
 	return SAL_OK;
 }
@@ -189,13 +198,12 @@ u32 sal_VideoGetPitch()
 
 extern int currentWidth;
 
-void update
 
 void sal_VideoEnterGame(u32 fullscreenOption, u32 pal, u32 refreshRate)
 {
 #ifdef GCW_ZERO
 	/* Copied from C++ headers which we can't include in C */
-	unsigned int Width = 512 /* SNES_WIDTH */,
+	unsigned int Width = 256 /* SNES_WIDTH */,
 	             Height = pal ? 239 /* SNES_HEIGHT_EXTENDED */ : 224 /* SNES_HEIGHT */;
 	if (fullscreenOption != 3)
 	{
@@ -277,7 +285,101 @@ void sal_Reset(void)
 	SDL_Quit();
 }
 
-int mainEntry(int argc, char *argv[]);
+
+void update_window_size(int w,
+                        int h,
+                        int ntsc_fix) {
+    SDL_ShowCursor(SDL_DISABLE);
+#ifdef SDL_TRIPLEBUF
+    int flags = SDL_TRIPLEBUF;
+#else
+    int flags = SDL_DOUBLEBUF;
+#endif
+    flags |= SDL_HWSURFACE
+#if defined(GCW_ZERO) && defined(USE_BGR15) && !defined(RS97)
+        | SDL_SWIZZLEBGR
+#endif
+            ;
+
+    if (mScreen && SDL_MUSTLOCK(mScreen))
+        SDL_UnlockSurface(mScreen);
+
+    mScreen = SDL_SetVideoMode(w,
+                              h,
+#if !defined(GCW_ZERO) || !defined(USE_BGR15)
+                              16,
+#else
+            15,
+#endif
+                              flags);
+    if (!mScreen) {
+        puts("SDL_SetVideoMode error");
+        exit(0);
+    }
+
+    if (SDL_MUSTLOCK(mScreen))
+        SDL_LockSurface(mScreen);
+
+//    printf("SDL_SetVideoMode: screenwidth: %d screenheight: %d\n",
+//           SCREEN_WIDTH,
+//           SCREEN_HEIGHT);
+
+
+
+//#if !defined(GCW_ZERO) && defined(USE_BGR15)
+//    screen->format->Rshift = 0;
+//    screen->format->Gshift = 5;
+//    screen->format->Bshift = 10;
+//    screen->format->Rmask = 0x1Fu;
+//    screen->format->Gmask = 0x1Fu << 5u;
+//    screen->format->Bmask = 0x1Fu << 10u;
+//    screen->format->Amask = 0;
+//    screen->format->Ashift = 0;
+//    screen->format_version++;
+//#endif
+
+//    video_clear_cache();
+}
+void updateWindowSize(int width, int height) {
+
+//    if (mScreen->w == width) return;
+
+    GFX.RealPitch = GFX.Pitch = width * sizeof(u16);
+    GFX.SubScreen = (uint8 *)malloc(GFX.RealPitch * 480 * 2);
+    GFX.ZBuffer =  (uint8 *)malloc(GFX.RealPitch * 480 * 2);
+    GFX.SubZBuffer = (uint8 *)malloc(GFX.RealPitch * 480 * 2);
+    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
+    GFX.PPL = GFX.Pitch >> 1;
+    GFX.PPLx2 = GFX.Pitch;
+    GFX.ZPitch = GFX.Pitch >> 1;
+
+    bool8 PAL = !!(Memory.FillRAM[0x2133] & 4);
+
+#ifdef GCW_ZERO
+    /* Copied from C++ headers which we can't include in C */
+    unsigned int Width = width /* SNES_WIDTH */,
+            Height = PAL ? 239 /* SNES_HEIGHT_EXTENDED */ : 224 /* SNES_HEIGHT */;
+    if (mScreen && SDL_MUSTLOCK(mScreen))
+        SDL_UnlockSurface(mScreen);
+    mScreen = SDL_SetVideoMode(Width, Height, mBpp, SDL_HWSURFACE |
+                                                    #ifdef SDL_TRIPLEBUF
+                                                    SDL_TRIPLEBUF
+                                                    #else
+                                                    SDL_DOUBLEBUF
+                                                    #endif
+
+                              );
+    if (!mScreen) {
+//        puts("SDL_SetVideoMode error" + SDL_GetError());
+        std::cout << "SDL_SetVideoMode error :" << SDL_GetError() << std::endl;
+        exit(0);
+    }
+    mRefreshRate = Memory.ROMFramesPerSecond;
+    if (SDL_MUSTLOCK(mScreen))
+        SDL_LockSurface(mScreen);
+#endif
+
+}
 
 // Prove entry point wrapper
 int main(int argc, char *argv[])

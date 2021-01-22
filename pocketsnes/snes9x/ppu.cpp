@@ -3124,6 +3124,7 @@ uint8 REGISTER_4212()
 
 void FLUSH_REDRAW ()
 {
+
     if (IPPU.PreviousLine != IPPU.CurrentLine)
     S9xUpdateScreen ();
 }
