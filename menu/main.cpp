@@ -140,7 +140,7 @@ bool8_32 S9xInitUpdate() {
     if (mMenuOptions.fullScreen == 3) GFX.Screen = (uint8 *) mScreen->pixels;
     else
 #endif
-        GFX.Screen = (u8 *) IntermediateScreen; /* replacement needed after loading the saved states menu */
+        GFX.Screen = (u8 *) mScreen->pixels; /* replacement needed after loading the saved states menu */
 
     return TRUE;
 }
@@ -167,16 +167,20 @@ bool8_32 S9xDeinitUpdate(int Width,
 
     switch (mMenuOptions.fullScreen) {
         case 0: {
-            if (mScreen->w != 256) {
-                updateSupportHiRes();
-                updateWindowSize(256, 240, 0);
+            if (mScreen->w != IPPU.RenderedScreenWidth) {
+//                Settings.SupportHiRes = FALSE;
+//                updateSupportHiRes();
+                updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+                GFX.Screen = (uint8 *) mScreen->pixels;
             }
             break;
         }
         case 1: {
             if (mScreen->w != 320) {
-                updateSupportHiRes();
+//                Settings.SupportHiRes = FALSE;
+//                updateSupportHiRes();
                 updateWindowSize(320, 240, 1);
+                GFX.Screen = (uint8 *) mScreen->pixels;
             }
             break;
         }
@@ -185,14 +189,16 @@ bool8_32 S9xDeinitUpdate(int Width,
                 Settings.SupportHiRes = FALSE;
                 updateSupportHiRes();
                 updateWindowSize(320, 240, 1);
+                GFX.Screen = (uint8 *) IntermediateScreen;
             }
             break;
         }
         case 3: {
             if (mScreen->w != IPPU.RenderedScreenWidth) {
-                Settings.SupportHiRes = TRUE;
-                updateSupportHiRes();
+//                Settings.SupportHiRes = TRUE;
+//                updateSupportHiRes();
                 updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+                GFX.Screen = (uint8 *) IntermediateScreen;
             }
             break;
         }
@@ -594,7 +600,7 @@ int SnesInit() {
     Settings.SDD1 = TRUE;
 
 #ifdef GCW_ZERO
-    if (mMenuOptions.fullScreen == 3) GFX.Screen = (uint8 *) mScreen->pixels;
+    if (mMenuOptions.fullScreen == 3 || mMenuOptions.fullScreen == 0) GFX.Screen = (uint8 *) mScreen->pixels;
     else
 #endif
         GFX.Screen = (u8 *) IntermediateScreen; /* replacement needed after loading the saved states menu */

@@ -398,6 +398,49 @@ void upscale_256x224_to_320x240(uint32_t *dst, uint32_t *src, int width)
     }
 }
 
+void downscale_512x240_to_320x240(uint32_t *dst, uint32_t *src, int width)
+{
+    int midh = 240 / 2;
+    int Eh = 0;
+    int source = 0;
+    int dh = 0;
+    int y, x;
+
+    for (y = 0; y < 239; y++)
+    {
+        source = dh * width / 2;
+
+        for (x = 0; x < 320/10; x++)
+        {
+            register uint32_t ab, cd, ef, gh;
+
+            __builtin_prefetch(dst + 4, 1);
+            __builtin_prefetch(src + source + 4, 0);
+
+            ab = src[source] & 0xF7DEF7DE;
+            cd = src[source + 1] & 0xF7DEF7DE;
+            ef = src[source + 2] & 0xF7DEF7DE;
+            gh = src[source + 3] & 0xF7DEF7DE;
+
+            if(Eh >= midh) {
+                ab = AVERAGE(ab, src[source + width/2]) & 0xF7DEF7DE; // to prevent overflow
+                cd = AVERAGE(cd, src[source + width/2 + 1]) & 0xF7DEF7DE; // to prevent overflow
+                ef = AVERAGE(ef, src[source + width/2 + 2]) & 0xF7DEF7DE; // to prevent overflow
+                gh = AVERAGE(gh, src[source + width/2 + 3]) & 0xF7DEF7DE; // to prevent overflow
+            }
+
+            *dst++ = ab;
+            *dst++  = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
+            *dst++  = (cd >> 16) + (ef << 16);
+            *dst++  = (ef >> 16) + (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
+            *dst++  = gh;
+
+            source += 4;
+
+        }
+        Eh += 239; if(Eh >= 239) { Eh -= 239; dh++; }
+    }
+}
 void upscale_256x240_to_320x240(uint32_t *dst, uint32_t *src, int width)
 {
     int midh = 240 / 2;

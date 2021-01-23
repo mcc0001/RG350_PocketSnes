@@ -332,13 +332,13 @@ void updateWindowSize(int width,
                       int isSoftware) {
 
 //    if (mScreen->w == width) return;
-    if (isSoftware) {
+//    if (isSoftware) {
+//
+//        GFX.RealPitch = GFX.Pitch = 256 * sizeof(u16);
+//    } else {
 
-        GFX.RealPitch = GFX.Pitch = 256 * sizeof(u16);
-    } else {
-
-        GFX.RealPitch = GFX.Pitch = width * sizeof(u16);
-    }
+        GFX.RealPitch = GFX.Pitch = 512 * sizeof(u16);
+//    }
 
     GFX.SubScreen = (uint8 *) malloc(GFX.RealPitch * 480 * 2);
     GFX.ZBuffer = (uint8 *) malloc(GFX.RealPitch * 480 * 2);
@@ -373,6 +373,8 @@ void updateWindowSize(int width,
     mRefreshRate = Memory.ROMFramesPerSecond;
     if (SDL_MUSTLOCK(mScreen))
         SDL_LockSurface(mScreen);
+
+//    GFX.Screen = (uint8 *) mScreen->pixels;
 #endif
 
 }
