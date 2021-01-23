@@ -73,6 +73,7 @@ extern "C" {
 
 #include "sal_common.h"
 
+
 u32 sal_InputWait();
 
 #ifdef __cplusplus

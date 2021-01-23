@@ -61,7 +61,6 @@ u32 sal_VideoGetHeight();
 void sal_VideoEnterGame(u32 fullscreenOption, u32 pal, u32 fps);
 
 // change screen resolution between 512 x 240 or 256 x 240
-void updateWindowSize(int width, int height);
 /* Called by the main code when the height changes from 239 to 224, or from
  * 224 to 239. */
 void sal_VideoSetPAL(u32 fullscreenOption, u32 pal);
@@ -148,7 +147,8 @@ s32 sal_ImageDraw(u16 *image, u32 width, u32 height, s32 x, s32 y);
 s32 sal_HighlightBar(s32 width, s32 height, s32 x, s32 y);
 
 extern int mainEntry(int argc, char *argv[]);
-extern void updateWindowSize(int width, int height);
+//extern void updateWindowSize(int width, int height);
+extern void updateWindowSize(int width, int height, int isSoftware);
 extern void update_window_size(int w,
                         int h,
                         int ntsc_fix);
