@@ -1515,20 +1515,20 @@ s32 SettingsMenu(void)
 					}
 					SettingsMenuUpdateText(SETTINGS_MENU_FULLSCREEN);
 
-                    switch (mMenuOptions->fullScreen) {
-                        case 0:
-                            GFX.Screen = (uint8 *) mScreen->pixels;
-                            break;
-                        case 1:
-                            GFX.Screen = (uint8 *) IntermediateScreen;
-                            break;
-                        case 2:
-                            GFX.Screen = (uint8 *) IntermediateScreen;
-                            break;
-                        case 3:
-                            GFX.Screen = (uint8 *) mScreen->pixels;
-                            break;
-                    }
+//                    switch (mMenuOptions->fullScreen) {
+//                        case 0:
+//                            GFX.Screen = (uint8 *) mScreen->pixels;
+//                            break;
+//                        case 1:
+//                            GFX.Screen = (uint8 *) IntermediateScreen;
+//                            break;
+//                        case 2:
+//                            GFX.Screen = (uint8 *) IntermediateScreen;
+//                            break;
+//                        case 3:
+//                            GFX.Screen = (uint8 *) mScreen->pixels;
+//                            break;
+//                    }
 					break;
 			}
 		}

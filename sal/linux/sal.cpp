@@ -5,11 +5,13 @@
 #include "sal.h"
 #include "memmap.h"
 #include <iostream>
+#include "menu.h"
 
 #define PALETTE_BUFFER_LENGTH    256*2*4
 #define SNES_WIDTH  256
 //#define SNES_HEIGHT 239
 
+extern u16 IntermediateScreen[];
 SDL_Surface *mScreen = NULL;
 static u32 mSoundThreadFlag = 0;
 static u32 mSoundLastCpuSpeed = 0;
@@ -19,6 +21,7 @@ static u32 *mPaletteLast = (u32 *) &mPaletteBuffer[0];
 static u32 *mPaletteEnd = (u32 *) &mPaletteBuffer[PALETTE_BUFFER_LENGTH];
 static u32 mInputFirst = 0;
 
+extern struct MENU_OPTIONS mMenuOptions;
 s32 mCpuSpeedLookup[1] = {0};
 
 #include <sal_common.h>
@@ -157,11 +160,10 @@ u32 sal_VideoInit(u32 bpp) {
                               );
 
     //If there was an error in setting up the screen
-//	if( mScreen == NULL )
-//	{
-//	sal_LastErrorSet("SDL_SetVideoMode failed");
-//	return SAL_ERROR;
-//	}
+//    if (mScreen == NULL) {
+//        sal_LastErrorSet("SDL_SetVideoMode failed");
+//        return SAL_ERROR;
+//    }
     if (!mScreen) {
 #ifdef MAKLOG
         std::cout << "sal.cpp:176" << " " << "setVideoMode fail : "
@@ -191,34 +193,37 @@ extern int currentWidth;
 void sal_VideoEnterGame(u32 fullscreenOption,
                         u32 pal,
                         u32 refreshRate) {
-#ifdef GCW_ZERO
-    /* Copied from C++ headers which we can't include in C */
-    unsigned int Width = 256 /* SNES_WIDTH */,
-            Height = pal ? 239 /* SNES_HEIGHT_EXTENDED */
-                         : 224 /* SNES_HEIGHT */;
-    if (fullscreenOption != 3) {
-        Width = SAL_SCREEN_WIDTH;
-        Height = SAL_SCREEN_HEIGHT;
-    }
-    if (SDL_MUSTLOCK(mScreen)) SDL_UnlockSurface(mScreen);
-    mScreen = SDL_SetVideoMode(Width, Height, mBpp, SDL_HWSURFACE |
-                                                    #ifdef SDL_TRIPLEBUF
-                                                    SDL_TRIPLEBUF
-                                                    #else
-                                                    SDL_DOUBLEBUF
-#endif
-                              );
+//#ifdef GCW_ZERO
+//    /* Copied from C++ headers which we can't include in C */
+//    unsigned int Width = 256 /* SNES_WIDTH */,
+//            Height = pal ? 239 /* SNES_HEIGHT_EXTENDED */
+//                         : 224 /* SNES_HEIGHT */;
+//    if (fullscreenOption != 3) {
+//        Width = SAL_SCREEN_WIDTH;
+//        Height = SAL_SCREEN_HEIGHT;
+//    }
+//    if (SDL_MUSTLOCK(mScreen)) SDL_UnlockSurface(mScreen);
+//    mScreen = SDL_SetVideoMode(Width, Height, mBpp, SDL_HWSURFACE |
+//                                                    #ifdef SDL_TRIPLEBUF
+//                                                    SDL_TRIPLEBUF
+//                                                    #else
+//                                                    SDL_DOUBLEBUF
+//#endif
+//                              );
     mRefreshRate = refreshRate;
-    if (SDL_MUSTLOCK(mScreen)) SDL_LockSurface(mScreen);
-#endif
+//    if (SDL_MUSTLOCK(mScreen)) SDL_LockSurface(mScreen);
+
+    updateVideoMode(false);
+//#endif
 }
 
 void sal_VideoSetPAL(u32 fullscreenOption,
                      u32 pal) {
-    if (fullscreenOption == 3) /* hardware scaling */
-    {
-        sal_VideoEnterGame(fullscreenOption, pal, mRefreshRate);
-    }
+//    if (fullscreenOption == 3) /* hardware scaling */
+//    {
+//        sal_VideoEnterGame(fullscreenOption, pal, mRefreshRate);
+//    }
+    updateVideoMode(true);
 }
 
 void sal_VideoExitGame() {
@@ -272,62 +277,46 @@ void sal_Reset(void) {
 }
 
 
-void update_window_size(int w,
-                        int h,
-                        int ntsc_fix) {
-    SDL_ShowCursor(SDL_DISABLE);
-#ifdef SDL_TRIPLEBUF
-    int flags = SDL_TRIPLEBUF;
-#else
-    int flags = SDL_DOUBLEBUF;
-#endif
-    flags |= SDL_HWSURFACE
-#if defined(GCW_ZERO) && defined(USE_BGR15) && !defined(RS97)
-        | SDL_SWIZZLEBGR
-#endif
-            ;
+static unsigned int currentMode = 3;
 
-    if (mScreen && SDL_MUSTLOCK(mScreen))
-        SDL_UnlockSurface(mScreen);
+void updateVideoMode(bool force) {
+//    GFX.Screen = (uint8 *) IntermediateScreen;
 
-    mScreen = SDL_SetVideoMode(w,
-                               h,
-#if !defined(GCW_ZERO) || !defined(USE_BGR15)
-                               16,
-#else
-            15,
-#endif
-                               flags);
-    if (!mScreen) {
-        puts("SDL_SetVideoMode error");
-        exit(0);
+    if (!force && mMenuOptions.fullScreen == currentMode) {
+        if (mMenuOptions.fullScreen == 3 || mMenuOptions.fullScreen == 0) {
+            if (IPPU.RenderedScreenWidth == mScreen->w &&  GFX.RealPitch == IPPU.RenderedScreenWidth * sizeof(u16) ) {
+                return;
+            }
+
+        } else {
+            if (GFX.RealPitch == IPPU.RenderedScreenWidth * sizeof(u16)){
+                return;
+            }
+        }
     }
 
-    if (SDL_MUSTLOCK(mScreen))
-        SDL_LockSurface(mScreen);
+    switch (mMenuOptions.fullScreen) {
+        case 0: // origin
+            updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+            GFX.Screen = (uint8 *) mScreen->pixels;
+            break;
+        case 1: // software fast
+            updateWindowSize(320, 240, 1);
+            GFX.Screen = (uint8 *) IntermediateScreen;
+            break;
+        case 2: // software smooth
+            updateWindowSize(320, 240, 1);
+            GFX.Screen = (uint8 *) IntermediateScreen;
+            break;
+        case 3: // hardware
+            updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+            GFX.Screen = (uint8 *) mScreen->pixels;
+            break;
+    }
+    currentMode = mMenuOptions.fullScreen;
 
-//    printf("SDL_SetVideoMode: screenwidth: %d screenheight: %d\n",
-//           SCREEN_WIDTH,
-//           SCREEN_HEIGHT);
 
-
-
-//#if !defined(GCW_ZERO) && defined(USE_BGR15)
-//    screen->format->Rshift = 0;
-//    screen->format->Gshift = 5;
-//    screen->format->Bshift = 10;
-//    screen->format->Rmask = 0x1Fu;
-//    screen->format->Gmask = 0x1Fu << 5u;
-//    screen->format->Bmask = 0x1Fu << 10u;
-//    screen->format->Amask = 0;
-//    screen->format->Ashift = 0;
-//    screen->format_version++;
-//#endif
-
-//    video_clear_cache();
 }
-
-//void updateVideo
 
 void updateWindowSize(int width,
                       int height,
@@ -336,7 +325,7 @@ void updateWindowSize(int width,
 //    if (mScreen->w == width) return;
 //    if (isSoftware) {
 
-        GFX.RealPitch = GFX.Pitch = IPPU.RenderedScreenWidth * sizeof(u16);
+    GFX.RealPitch = GFX.Pitch = IPPU.RenderedScreenWidth * sizeof(u16);
 //    } else {
 //
 //        GFX.RealPitch = GFX.Pitch = width * sizeof(u16);

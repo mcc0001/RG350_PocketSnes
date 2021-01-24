@@ -25,7 +25,7 @@ extern int currentWidth;
 #define FIXED_POINT_REMAINDER 0xffffUL
 #define FIXED_POINT_SHIFT 16
 
-static struct MENU_OPTIONS mMenuOptions;
+struct MENU_OPTIONS mMenuOptions;
 static int mEmuScreenHeight;
 static int mEmuScreenWidth;
 static char mRomName[SAL_MAX_PATH] = {""};
@@ -140,7 +140,7 @@ bool8_32 S9xInitUpdate() {
     if (mMenuOptions.fullScreen == 3) GFX.Screen = (uint8 *) mScreen->pixels;
     else
 #endif
-        GFX.Screen = (u8 *) mScreen->pixels; /* replacement needed after loading the saved states menu */
+        GFX.Screen = (u8 *) IntermediateScreen; /* replacement needed after loading the saved states menu */
 
     return TRUE;
 }
@@ -160,53 +160,54 @@ bool8_32 S9xDeinitUpdate(int Width,
     // If the height changed from 224 to 239, or from 239 to 224,
     // possibly change the resolution.
     bool PAL = !!(Memory.FillRAM[0x2133] & 4);
-//    if (PAL != LastPAL) {
-//        sal_VideoSetPAL(mMenuOptions.fullScreen, PAL);
-//        LastPAL = PAL;
-//    }
+    if (PAL != LastPAL) {
+        sal_VideoSetPAL(mMenuOptions.fullScreen, PAL);
+        LastPAL = PAL;
+    }
     #ifdef MAKLOG
     printf("mode: %d Render w: %d screen.w: %d screen.pitch: %d\n", mMenuOptions.fullScreen
     , IPPU.RenderedScreenWidth,mScreen->w, mScreen->pitch);
     #endif
 
-    switch (mMenuOptions.fullScreen) {
-        case 0: {
-            if (mScreen->w != IPPU.RenderedScreenWidth) {
-//                Settings.SupportHiRes = FALSE;
-//                updateSupportHiRes();
-                updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-                GFX.Screen = (uint8 *) mScreen->pixels;
-            }
-            break;
-        }
-        case 1: { // fast
-            if (mScreen->w != 320) {
-//                Settings.SupportHiRes = FALSE;
-//                updateSupportHiRes(false);
-                updateWindowSize(320, 240, 1);
-                GFX.Screen = (uint8 *) IntermediateScreen;
-            }
-            break;
-        }
-        case 2: { // smooth
-            if (mScreen->w != 320) {
-//                Settings.SupportHiRes = FALSE;
-//                updateSupportHiRes();
-                updateWindowSize(320, 240, 1);
-                GFX.Screen = (uint8 *) IntermediateScreen;
-            }
-            break;
-        }
-        case 3: {
-            if (mScreen->w != IPPU.RenderedScreenWidth) {
-//                Settings.SupportHiRes = TRUE;
-//                updateSupportHiRes(true);
-                updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-                GFX.Screen = (uint8 *) mScreen->pixels;
-            }
-            break;
-        }
-    }
+    updateVideoMode(false);
+//    switch (mMenuOptions.fullScreen) {
+//        case 0: {
+//            if (mScreen->w != IPPU.RenderedScreenWidth) {
+////                Settings.SupportHiRes = FALSE;
+////                updateSupportHiRes();
+//                updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+//                GFX.Screen = (uint8 *) mScreen->pixels;
+//            }
+//            break;
+//        }
+//        case 1: { // fast
+//            if (mScreen->w != 320) {
+////                Settings.SupportHiRes = FALSE;
+////                updateSupportHiRes(false);
+//                updateWindowSize(320, 240, 1);
+//                GFX.Screen = (uint8 *) IntermediateScreen;
+//            }
+//            break;
+//        }
+//        case 2: { // smooth
+//            if (mScreen->w != 320) {
+////                Settings.SupportHiRes = FALSE;
+////                updateSupportHiRes();
+//                updateWindowSize(320, 240, 1);
+//                GFX.Screen = (uint8 *) IntermediateScreen;
+//            }
+//            break;
+//        }
+//        case 3: {
+//            if (mScreen->w != IPPU.RenderedScreenWidth) {
+////                Settings.SupportHiRes = TRUE;
+////                updateSupportHiRes(true);
+//                updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+//                GFX.Screen = (uint8 *) mScreen->pixels;
+//            }
+//            break;
+//        }
+//    }
 
 #ifdef MAKLOG
 //std::cout << "main.cpp:186" << " "  << "update resolution end!!" << std::endl;
@@ -243,7 +244,7 @@ bool8_32 S9xDeinitUpdate(int Width,
                 u32 y, pitch = sal_VideoGetPitch();
                 u8 *src = (u8 *) GFX.Screen, *dst = (u8 *) sal_VideoGetBuffer();
                 for (y = 0; y < h; y++) {
-                    memmove(dst, src, mScreen->w * sizeof(u16));
+                    memmove(dst, src, 320 * sizeof(u16));
                     src += IPPU.RenderedScreenWidth* sizeof(u16);
                     dst += pitch;
                 }
@@ -482,24 +483,6 @@ int Run(int sound) {
     bool PAL = !!(Memory.FillRAM[0x2133] & 4);
 
     sal_VideoEnterGame(mMenuOptions.fullScreen, PAL, Memory.ROMFramesPerSecond);
-//    switch (mMenuOptions.fullScreen) {
-//        case 0:
-//            GFX.Screen = (uint8 *) mScreen->pixels;
-//            updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-//            break;
-//        case 1:
-//            GFX.Screen = (uint8 *) IntermediateScreen;
-//            updateWindowSize(320, 240, 1);
-//            break;
-//        case 2:
-//            GFX.Screen = (uint8 *) IntermediateScreen;
-//            updateWindowSize(320, 240, 1);
-//            break;
-//        case 3:
-//            GFX.Screen = (uint8 *) mScreen->pixels;
-//            updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-//            break;
-//    }
     LastPAL = PAL;
 
     Settings.SoundSync = mMenuOptions.soundSync;
@@ -760,6 +743,7 @@ int mainEntry(int argc,
         sal_Reset();
         return 0;
     }
+
 
     while (1) {
         mInMenu = 1;
