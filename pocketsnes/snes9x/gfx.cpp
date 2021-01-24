@@ -403,9 +403,9 @@ void DrawLargePixel16Sub1_2(uint32 Tile,
                             uint32 StartLine,
                             uint32 LineCount);
 
-void updateSupportHiRes() {
+void updateSupportHiRes(bool highRes) {
 
-    if (Settings.SupportHiRes) {
+    if (highRes) {
         DrawHiResTilePtr = DrawTile16;
         DrawHiResClippedTilePtr = DrawClippedTile16;
     } else {

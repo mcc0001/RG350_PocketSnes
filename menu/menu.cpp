@@ -15,6 +15,8 @@
 #define ROM_SELECTOR_DEFAULT_FOCUS		2
 #define ROM_SELECTOR_ROM_START			3
 
+extern SDL_Surface *mScreen;
+extern u16 IntermediateScreen[];
 static u16 mMenuBackground[SAL_SCREEN_WIDTH * SAL_SCREEN_HEIGHT];
 
 static s32 mMenutileXscroll=0;
@@ -1512,6 +1514,21 @@ s32 SettingsMenu(void)
 						if(mMenuOptions->fullScreen > 3) mMenuOptions->fullScreen = 3;
 					}
 					SettingsMenuUpdateText(SETTINGS_MENU_FULLSCREEN);
+
+                    switch (mMenuOptions->fullScreen) {
+                        case 0:
+                            GFX.Screen = (uint8 *) mScreen->pixels;
+                            break;
+                        case 1:
+                            GFX.Screen = (uint8 *) IntermediateScreen;
+                            break;
+                        case 2:
+                            GFX.Screen = (uint8 *) IntermediateScreen;
+                            break;
+                        case 3:
+                            GFX.Screen = (uint8 *) mScreen->pixels;
+                            break;
+                    }
 					break;
 			}
 		}

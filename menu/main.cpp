@@ -127,7 +127,7 @@ void S9xLoadSDD1Data(void) {
 
 }
 
-u16 IntermediateScreen[SNES_WIDTH * SNES_HEIGHT_EXTENDED];
+u16 IntermediateScreen[SNES_WIDTH * 2 * SNES_HEIGHT_EXTENDED];
 SDL_Surface *image;
 extern SDL_Surface *mScreen;
 
@@ -160,10 +160,14 @@ bool8_32 S9xDeinitUpdate(int Width,
     // If the height changed from 224 to 239, or from 239 to 224,
     // possibly change the resolution.
     bool PAL = !!(Memory.FillRAM[0x2133] & 4);
-    if (PAL != LastPAL) {
-        sal_VideoSetPAL(mMenuOptions.fullScreen, PAL);
-        LastPAL = PAL;
-    }
+//    if (PAL != LastPAL) {
+//        sal_VideoSetPAL(mMenuOptions.fullScreen, PAL);
+//        LastPAL = PAL;
+//    }
+    #ifdef MAKLOG
+    printf("mode: %d Render w: %d screen.w: %d screen.pitch: %d\n", mMenuOptions.fullScreen
+    , IPPU.RenderedScreenWidth,mScreen->w, mScreen->pitch);
+    #endif
 
     switch (mMenuOptions.fullScreen) {
         case 0: {
@@ -175,19 +179,19 @@ bool8_32 S9xDeinitUpdate(int Width,
             }
             break;
         }
-        case 1: {
+        case 1: { // fast
             if (mScreen->w != 320) {
 //                Settings.SupportHiRes = FALSE;
-//                updateSupportHiRes();
+//                updateSupportHiRes(false);
                 updateWindowSize(320, 240, 1);
-                GFX.Screen = (uint8 *) mScreen->pixels;
+                GFX.Screen = (uint8 *) IntermediateScreen;
             }
             break;
         }
-        case 2: {
+        case 2: { // smooth
             if (mScreen->w != 320) {
-                Settings.SupportHiRes = FALSE;
-                updateSupportHiRes();
+//                Settings.SupportHiRes = FALSE;
+//                updateSupportHiRes();
                 updateWindowSize(320, 240, 1);
                 GFX.Screen = (uint8 *) IntermediateScreen;
             }
@@ -196,9 +200,9 @@ bool8_32 S9xDeinitUpdate(int Width,
         case 3: {
             if (mScreen->w != IPPU.RenderedScreenWidth) {
 //                Settings.SupportHiRes = TRUE;
-//                updateSupportHiRes();
+//                updateSupportHiRes(true);
                 updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-                GFX.Screen = (uint8 *) IntermediateScreen;
+                GFX.Screen = (uint8 *) mScreen->pixels;
             }
             break;
         }
@@ -228,22 +232,42 @@ bool8_32 S9xDeinitUpdate(int Width,
         }
         case 1: /* Fast software scaling */
             if (PAL) {
+                #ifdef MAKLOG
+//                std::cout << "main.cpp:232" << " "  << "fast PAL" << std::endl;
+                #endif
                 upscale_256x240_to_320x240((uint32_t *) sal_VideoGetBuffer(),
                                            (uint32_t *) IntermediateScreen,
                                            SNES_WIDTH);
             } else {
-                upscale_256x224_to_320x240((uint32_t *) sal_VideoGetBuffer(),
-                                           (uint32_t *) IntermediateScreen,
-                                           SNES_WIDTH);
+                u32 h = PAL ? SNES_HEIGHT_EXTENDED : SNES_HEIGHT;
+                u32 y, pitch = sal_VideoGetPitch();
+                u8 *src = (u8 *) GFX.Screen, *dst = (u8 *) sal_VideoGetBuffer();
+                for (y = 0; y < h; y++) {
+                    memmove(dst, src, mScreen->w * sizeof(u16));
+                    src += IPPU.RenderedScreenWidth* sizeof(u16);
+                    dst += pitch;
+                }
+                #ifdef MAKLOG
+//                std::cout << "main.cpp:239" << " "  << "fast ntsc" << std::endl;
+                #endif
+//                upscale_256x224_to_320x240((uint32_t *) sal_VideoGetBuffer(),
+//                                           (uint32_t *) IntermediateScreen,
+//                                           SNES_WIDTH);
             }
             break;
 
         case 2: /* Smooth software scaling */
             if (PAL) {
+                #ifdef MAKLOG
+                std::cout << "main.cpp:250" << " "  << "smooth pal" << std::endl;
+                #endif
                 upscale_256x240_to_320x240_bilinearish(
                         (uint32_t *) sal_VideoGetBuffer() + 160,
                         (uint32_t *) IntermediateScreen, SNES_WIDTH);
             } else {
+                #ifdef MAKLOG
+                std::cout << "main.cpp:257" << " "  << "smooth ntsc" << std::endl;
+                #endif
                 upscale_256x224_to_320x240_bilinearish(
                         (uint32_t *) sal_VideoGetBuffer() + 160,
                         (uint32_t *) IntermediateScreen, SNES_WIDTH);
@@ -458,6 +482,24 @@ int Run(int sound) {
     bool PAL = !!(Memory.FillRAM[0x2133] & 4);
 
     sal_VideoEnterGame(mMenuOptions.fullScreen, PAL, Memory.ROMFramesPerSecond);
+//    switch (mMenuOptions.fullScreen) {
+//        case 0:
+//            GFX.Screen = (uint8 *) mScreen->pixels;
+//            updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+//            break;
+//        case 1:
+//            GFX.Screen = (uint8 *) IntermediateScreen;
+//            updateWindowSize(320, 240, 1);
+//            break;
+//        case 2:
+//            GFX.Screen = (uint8 *) IntermediateScreen;
+//            updateWindowSize(320, 240, 1);
+//            break;
+//        case 3:
+//            GFX.Screen = (uint8 *) mScreen->pixels;
+//            updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
+//            break;
+//    }
     LastPAL = PAL;
 
     Settings.SoundSync = mMenuOptions.soundSync;

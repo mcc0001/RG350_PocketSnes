@@ -327,17 +327,19 @@ void update_window_size(int w,
 //    video_clear_cache();
 }
 
+//void updateVideo
+
 void updateWindowSize(int width,
                       int height,
                       int isSoftware) {
 
 //    if (mScreen->w == width) return;
 //    if (isSoftware) {
-//
-//        GFX.RealPitch = GFX.Pitch = 256 * sizeof(u16);
-//    } else {
 
-        GFX.RealPitch = GFX.Pitch = 512 * sizeof(u16);
+        GFX.RealPitch = GFX.Pitch = IPPU.RenderedScreenWidth * sizeof(u16);
+//    } else {
+//
+//        GFX.RealPitch = GFX.Pitch = width * sizeof(u16);
 //    }
 
     GFX.SubScreen = (uint8 *) malloc(GFX.RealPitch * 480 * 2);
