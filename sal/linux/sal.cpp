@@ -295,6 +295,11 @@ void updateVideoMode(bool force) {
         }
     }
 
+    sal_VideoClear(0);
+    sal_VideoClear(0);
+    sal_VideoClear(0);
+
+
     switch (mMenuOptions.fullScreen) {
         case 0: // origin
             updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
@@ -346,6 +351,8 @@ void updateWindowSize(int width,
     unsigned int Width = width /* SNES_WIDTH */,
             Height = PAL ? 239 /* SNES_HEIGHT_EXTENDED */
                          : 224 /* SNES_HEIGHT */;
+                         if (isSoftware) Height = 240;
+
     if (mScreen && SDL_MUSTLOCK(mScreen))
         SDL_UnlockSurface(mScreen);
     mScreen = SDL_SetVideoMode(Width, Height, mBpp, SDL_HWSURFACE |

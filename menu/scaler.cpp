@@ -387,122 +387,96 @@ void upscale_256x240_to_320x240_bilinearish(uint32_t *dst,
         uint32_t *src - pointer to 256x192x16bpp buffer
 */
 
-void upscale_256x224_to_320x240(uint32_t *dst,
-                                uint32_t *src,
-                                int width) {
+void upscale_256x224_to_320x240(uint32_t *dst, uint32_t *src, int width)
+{
     int midh = 240 / 2;
     int Eh = 0;
     int source = 0;
     int dh = 0;
     int y, x;
 
-    uint16_t *dst16 = (uint16_t *) dst;
-    uint16_t *src16 = (uint16_t *) src;
+    uint16_t *dst16 = (uint16_t *)dst;
+    uint16_t *src16 = (uint16_t *)src;
+    for (y = 0; y < 239; y++)
+    {
 
-    for (y = 0; y < 240; y++) {
-//        source = dh * width / 2;
+        for (x = 0; x < 64; x++)
+        {
 
-        for (x = 0; x < 320 / 10; x++) {
-//            register uint32_t ab, cd, ef, gh;
 
-//            __builtin_prefetch(dst + 4, 1);
-//            __builtin_prefetch(src + source + 4, 0);
-//
-//            ab = src[source] & 0xF7DEF7DE;
-//            cd = src[source + 1] & 0xF7DEF7DE;
-//            ef = src[source + 2] & 0xF7DEF7DE;
-//            gh = src[source + 3] & 0xF7DEF7DE;
-//
-//            if (Eh >= midh) {
-//                ab = AVERAGE(ab, src[source + width / 2]) &
-//                     0xF7DEF7DE; // to prevent overflow
-//                cd = AVERAGE(cd, src[source + width / 2 + 1]) &
-//                     0xF7DEF7DE; // to prevent overflow
-//                ef = AVERAGE(ef, src[source + width / 2 + 2]) &
-//                     0xF7DEF7DE; // to prevent overflow
-//                gh = AVERAGE(gh, src[source + width / 2 + 3]) &
-//                     0xF7DEF7DE; // to prevent overflow
-//            }
-
-//            *dst++ = ab;
-//            *dst++  = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
-//            *dst++  = (cd >> 16) + (ef << 16);
-//            *dst++  = (ef >> 16) + (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
-//            *dst++  = gh;
-
+            // 4 pixels -> 5 pixels
             *dst16++ = src16[0];
             *dst16++ = src16[1];
             *dst16++ = src16[2];
             *dst16++ = src16[3];
-            *dst16++ = src16[3];
-            *dst16++ = src16[4];
-            *dst16++ = src16[5];
-            *dst16++ = src16[6];
-            *dst16++ = src16[7];
-            *dst16++ = src16[7];
-            src16 += 8;
+            *dst16++ = AVERAGE(src16[3], src16[4]);
 
+
+            src16 += 4;
         }
-//        Eh += 224;
-//        if (Eh >= 240) {
-//            Eh -= 240;
-//            dh++;
-//        }
+        if (y % 15 == 0){
+            src16 -= 256;
+        }
     }
 }
 
 void downscale_512x240_to_320x240(uint32_t *dst,
                                   uint32_t *src,
                                   int width) {
-    int midh = 240 / 2;
-    int Eh = 0;
-    int source = 0;
-    int dh = 0;
+//    int midh = 240 / 2;
+//    int Eh = 0;
+//    int source = 0;
+//    int dh = 0;
     int y, x;
 
+    uint16_t *dst16 = (uint16_t *)dst;
+    uint16_t *src16 = (uint16_t *)src;
     for (y = 0; y < 239; y++) {
-        source = dh * width / 2;
 
-        for (x = 0; x < 320 / 10; x++) {
-            register uint32_t ab, cd, ef, gh;
+        for (x = 0; x < 64; x++) {
+            // 8 pixels -> 5 pixels
+            *dst16++ = src16[0];
+            *dst16++ = AVERAGE(src16[1], src16[2]);
+            *dst16++ = src16[3];
+            *dst16++ = AVERAGE(src16[4], src16[5]);
+            *dst16++ = AVERAGE(src16[6], src16[7]);
 
-            __builtin_prefetch(dst + 4, 1);
-            __builtin_prefetch(src + source + 4, 0);
+            src16 += 8;
 
-            ab = src[source] & 0xF7DEF7DE;
-            cd = src[source + 1] & 0xF7DEF7DE;
-            ef = src[source + 2] & 0xF7DEF7DE;
-            gh = src[source + 3] & 0xF7DEF7DE;
-
-            if (Eh >= midh) {
-                ab = AVERAGE(ab, src[source + width / 2]) &
-                     0xF7DEF7DE; // to prevent overflow
-                cd = AVERAGE(cd, src[source + width / 2 + 1]) &
-                     0xF7DEF7DE; // to prevent overflow
-                ef = AVERAGE(ef, src[source + width / 2 + 2]) &
-                     0xF7DEF7DE; // to prevent overflow
-                gh = AVERAGE(gh, src[source + width / 2 + 3]) &
-                     0xF7DEF7DE; // to prevent overflow
-            }
-
-            *dst++ = ab;
-            *dst++ = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
-            *dst++ = (cd >> 16) + (ef << 16);
-            *dst++ = (ef >> 16) +
-                     (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
-            *dst++ = gh;
-
-            source += 4;
-
-        }
-        Eh += 239;
-        if (Eh >= 239) {
-            Eh -= 239;
-            dh++;
         }
     }
 }
 
+void downscale_512x224_to_320x240(uint32_t *dst,
+                                  uint32_t *src,
+                                  int width) {
+//    int midh = 240 / 2;
+//    int Eh = 0;
+//    int source = 0;
+//    int dh = 0;
+    int y, x;
+
+    uint16_t *dst16 = (uint16_t *)dst;
+    uint16_t *src16 = (uint16_t *)src;
+    for (y = 0; y < 239; y++) {
+
+        for (x = 0; x < 64; x++) {
+            // 8 pixels -> 5 pixels
+            *dst16++ = src16[0];
+            *dst16++ = AVERAGE(src16[1], src16[2]);
+            *dst16++ = src16[3];
+            *dst16++ = AVERAGE(src16[4], src16[5]);
+            *dst16++ = AVERAGE(src16[6], src16[7]);
+
+            src16 += 8;
+
+        }
+
+        if (y % 15 == 0){
+            src16 -= 512;
+        }
+    }
+}
 
 void upscale_256x240_to_320x240(uint32_t *dst,
                                 uint32_t *src,
@@ -539,16 +513,11 @@ void upscale_256x240_to_320x240(uint32_t *dst,
                      0xF7DEF7DE; // to prevent overflow
             }
 
-//            *dst++ = ab;
-//            *dst++  = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
-//            *dst++  = (cd >> 16) + (ef << 16);
-//            *dst++  = (ef >> 16) + (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
-//            *dst++  = gh;
-            *dst++ = src[source];
-            *dst++ = src[source + 2];
-            *dst++ = src[source + 4];
-            *dst++ = src[source + 6];
-            *dst++ = src[source + 6];
+            *dst++ = ab;
+            *dst++  = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
+            *dst++  = (cd >> 16) + (ef << 16);
+            *dst++  = (ef >> 16) + (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
+            *dst++  = gh;
 
 
             source += 8;
