@@ -303,21 +303,21 @@ void updateVideoMode(bool force) {
     switch (mMenuOptions.fullScreen) {
         case 0: // origin
             updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-            GFX.Screen = (uint8 *) mScreen->pixels;
+//            GFX.Screen = (uint8 *) mScreen->pixels;
             break;
         case 1: // software fast
             updateWindowSize(320, 240, 1);
-            GFX.Screen = (uint8 *) IntermediateScreen;
+//            GFX.Screen = (uint8 *) IntermediateScreen;
             break;
         case 2: // software smooth
             updateWindowSize(320, 240, 1);
-            GFX.Screen = (uint8 *) IntermediateScreen;
             break;
         case 3: // hardware
             updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
-            GFX.Screen = (uint8 *) mScreen->pixels;
+//            GFX.Screen = (uint8 *) mScreen->pixels;
             break;
     }
+    GFX.Screen = (uint8 *) IntermediateScreen;
     currentMode = mMenuOptions.fullScreen;
 
 

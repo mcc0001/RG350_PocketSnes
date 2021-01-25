@@ -387,21 +387,20 @@ void upscale_256x240_to_320x240_bilinearish(uint32_t *dst,
         uint32_t *src - pointer to 256x192x16bpp buffer
 */
 
-void upscale_256x224_to_320x240(uint32_t *dst, uint32_t *src, int width)
-{
+void upscale_256x224_to_320x240(uint32_t *dst,
+                                uint32_t *src,
+                                int width) {
     int midh = 240 / 2;
     int Eh = 0;
     int source = 0;
     int dh = 0;
     int y, x;
 
-    uint16_t *dst16 = (uint16_t *)dst;
-    uint16_t *src16 = (uint16_t *)src;
-    for (y = 0; y < 239; y++)
-    {
+    uint16_t *dst16 = (uint16_t *) dst;
+    uint16_t *src16 = (uint16_t *) src;
+    for (y = 0; y < 239; y++) {
 
-        for (x = 0; x < 64; x++)
-        {
+        for (x = 0; x < 64; x++) {
 
 
             // 4 pixels -> 5 pixels
@@ -414,7 +413,7 @@ void upscale_256x224_to_320x240(uint32_t *dst, uint32_t *src, int width)
 
             src16 += 4;
         }
-        if (y % 15 == 0){
+        if (y % 15 == 0) {
             src16 -= 256;
         }
     }
@@ -429,8 +428,35 @@ void downscale_512x240_to_320x240(uint32_t *dst,
 //    int dh = 0;
     int y, x;
 
-    uint16_t *dst16 = (uint16_t *)dst;
-    uint16_t *src16 = (uint16_t *)src;
+    uint16_t *dst16 = (uint16_t *) dst;
+    uint16_t *src16 = (uint16_t *) src;
+    for (y = 0; y < 239; y++) {
+
+        for (x = 0; x < 64; x++) {
+            // 8 pixels -> 5 pixels
+            *dst16++ = src16[0];
+            *dst16++ = AVERAGE(src16[1], src16[2]);
+            *dst16++ = src16[3];
+            *dst16++ = AVERAGE(src16[4], src16[5]);
+            *dst16++ = AVERAGE(src16[6], src16[7]);
+
+            src16 += 8;
+
+        }
+    }
+}
+
+void downscale_512x240_to_320x240_bilinearish(uint32_t *dst,
+                                              uint32_t *src,
+                                              int width) {
+//    int midh = 240 / 2;
+//    int Eh = 0;
+//    int source = 0;
+//    int dh = 0;
+    int y, x;
+
+    uint16_t *dst16 = (uint16_t *) dst;
+    uint16_t *src16 = (uint16_t *) src;
     for (y = 0; y < 239; y++) {
 
         for (x = 0; x < 64; x++) {
@@ -456,8 +482,8 @@ void downscale_512x224_to_320x240(uint32_t *dst,
 //    int dh = 0;
     int y, x;
 
-    uint16_t *dst16 = (uint16_t *)dst;
-    uint16_t *src16 = (uint16_t *)src;
+    uint16_t *dst16 = (uint16_t *) dst;
+    uint16_t *src16 = (uint16_t *) src;
     for (y = 0; y < 239; y++) {
 
         for (x = 0; x < 64; x++) {
@@ -472,8 +498,53 @@ void downscale_512x224_to_320x240(uint32_t *dst,
 
         }
 
-        if (y % 15 == 0){
+        if (y % 15 == 0) {
             src16 -= 512;
+        }
+    }
+}
+
+void downscale_512x224_to_320x240_bilinearish(uint32_t *dst,
+                                              uint32_t *src,
+                                              int width) {
+//    int midh = 240 / 2;
+//    int Eh = 0;
+//    int source = 0;
+//    int dh = 0;
+    int y, x;
+
+    uint16_t *dst16 = (uint16_t *) dst;
+    uint16_t *src16 = (uint16_t *) src;
+    bool doubleLine = false;
+    for (y = 0; y < 239; y++) {
+
+        for (x = 0; x < 64; x++) {
+            // 8 pixels -> 5 pixels
+            if (!doubleLine) {
+
+                *dst16++ = src16[0];
+                *dst16++ = AVERAGE(src16[1], src16[2]);
+                *dst16++ = src16[3];
+                *dst16++ = AVERAGE(src16[4], src16[5]);
+                *dst16++ = AVERAGE(src16[6], src16[7]);
+
+            } else {
+                *dst16++ = AVERAGE(src16[0], src16[0 + 512]);
+                *dst16++ = AVERAGE(AVERAGE(src16[1], src16[2]),AVERAGE(src16[1 + 512], src16[2 + 512]) );
+                *dst16++ = AVERAGE(src16[3], src16[3 + 512]);
+                *dst16++ = AVERAGE(AVERAGE(src16[4], src16[5]),AVERAGE(src16[4 + 512], src16[5 + 512]) );
+                *dst16++ = AVERAGE(AVERAGE(src16[6], src16[7]),AVERAGE(src16[6+512], src16[7+512]));
+
+            }
+            src16 += 8;
+
+        }
+
+        if (y % 15 == 0) {
+            src16 -= 512;
+            doubleLine = true;
+        } else {
+            doubleLine = false;
         }
     }
 }
@@ -514,10 +585,11 @@ void upscale_256x240_to_320x240(uint32_t *dst,
             }
 
             *dst++ = ab;
-            *dst++  = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
-            *dst++  = (cd >> 16) + (ef << 16);
-            *dst++  = (ef >> 16) + (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
-            *dst++  = gh;
+            *dst++ = ((ab >> 17) + ((cd & 0xFFFF) >> 1)) + (cd << 16);
+            *dst++ = (cd >> 16) + (ef << 16);
+            *dst++ = (ef >> 16) +
+                     (((ef & 0xFFFF0000) >> 1) + ((gh & 0xFFFF) << 15));
+            *dst++ = gh;
 
 
             source += 8;

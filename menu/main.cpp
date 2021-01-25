@@ -246,17 +246,33 @@ bool8_32 S9xDeinitUpdate(int Width,
 #ifdef MAKLOG
                 std::cout << "main.cpp:250" << " " << "smooth pal" << std::endl;
 #endif
+                if (is512){
+
+                    downscale_512x240_to_320x240_bilinearish(
+                            (uint32_t *) sal_VideoGetBuffer() ,
+                            (uint32_t *) IntermediateScreen, SNES_WIDTH);
+                } else {
+
                 upscale_256x240_to_320x240_bilinearish(
-                        (uint32_t *) sal_VideoGetBuffer() + 160,
+                        (uint32_t *) sal_VideoGetBuffer() ,
                         (uint32_t *) IntermediateScreen, SNES_WIDTH);
+                }
             } else {
 #ifdef MAKLOG
                 std::cout << "main.cpp:257" << " " << "smooth ntsc"
                           << std::endl;
 #endif
+                if (is512){
+
+                    downscale_512x224_to_320x240_bilinearish(
+                            (uint32_t *) sal_VideoGetBuffer() ,
+                            (uint32_t *) IntermediateScreen, SNES_WIDTH);
+                } else {
+
                 upscale_256x224_to_320x240_bilinearish(
-                        (uint32_t *) sal_VideoGetBuffer() + 160,
+                        (uint32_t *) sal_VideoGetBuffer() ,
                         (uint32_t *) IntermediateScreen, SNES_WIDTH);
+                }
             }
             break;
     }

@@ -19,3 +19,9 @@ void downscale_512x240_to_320x240(uint32_t *dst,
 void downscale_512x224_to_320x240(uint32_t *dst,
                                   uint32_t *src,
                                   int width);
+void downscale_512x224_to_320x240_bilinearish(uint32_t *dst,
+                                              uint32_t *src,
+                                              int width);
+void downscale_512x240_to_320x240_bilinearish(uint32_t *dst,
+                                              uint32_t *src,
+                                              int width);
