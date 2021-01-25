@@ -171,7 +171,7 @@ bool8_32 S9xDeinitUpdate(int Width,
            mScreen->pitch);
 #endif
 
-    updateVideoMode(false);
+    if (!updateVideoMode(false)) return TRUE;
 
 #ifdef MAKLOG
 //std::cout << "main.cpp:186" << " "  << "update resolution end!!" << std::endl;

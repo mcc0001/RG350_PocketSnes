@@ -213,7 +213,7 @@ void sal_VideoEnterGame(u32 fullscreenOption,
     mRefreshRate = refreshRate;
 //    if (SDL_MUSTLOCK(mScreen)) SDL_LockSurface(mScreen);
 
-    updateVideoMode(false);
+//    updateVideoMode(false);
 //#endif
 }
 
@@ -223,7 +223,7 @@ void sal_VideoSetPAL(u32 fullscreenOption,
 //    {
 //        sal_VideoEnterGame(fullscreenOption, pal, mRefreshRate);
 //    }
-    updateVideoMode(true);
+//    updateVideoMode(true);
 }
 
 void sal_VideoExitGame() {
@@ -279,18 +279,18 @@ void sal_Reset(void) {
 
 static unsigned int currentMode = 3;
 
-void updateVideoMode(bool force) {
+bool updateVideoMode(bool force) {
 //    GFX.Screen = (uint8 *) IntermediateScreen;
 
     if (!force && mMenuOptions.fullScreen == currentMode) {
         if (mMenuOptions.fullScreen == 3 || mMenuOptions.fullScreen == 0) {
             if (IPPU.RenderedScreenWidth == mScreen->w &&  GFX.RealPitch == IPPU.RenderedScreenWidth * sizeof(u16) ) {
-                return;
+                return true;
             }
 
         } else {
             if (GFX.RealPitch == IPPU.RenderedScreenWidth * sizeof(u16)){
-                return;
+                return true;
             }
         }
     }
@@ -320,6 +320,7 @@ void updateVideoMode(bool force) {
     GFX.Screen = (uint8 *) IntermediateScreen;
     currentMode = mMenuOptions.fullScreen;
 
+    return false;
 
 }
 

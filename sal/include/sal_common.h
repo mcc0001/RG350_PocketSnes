@@ -150,5 +150,5 @@ s32 sal_HighlightBar(s32 width, s32 height, s32 x, s32 y);
 extern int mainEntry(int argc, char *argv[]);
 //extern void updateWindowSize(int width, int height);
 extern void updateWindowSize(int width, int height, int isSoftware);
-extern void updateVideoMode(bool force);
+extern bool updateVideoMode(bool force);
 #endif /* __SAL_COMMON_H__ */
