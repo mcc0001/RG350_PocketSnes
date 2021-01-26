@@ -2,6 +2,7 @@
  * https://raw.github.com/dmitrysmagin/snes9x4d-rzx50/master/dingux-sdl/scaler.cpp
  */
 
+// current mode RGB565
 #include "scaler.h"
 
 #define AVERAGE(z, x) ((((z) & 0xF7DEF7DE) >> 1) + (((x) & 0xF7DEF7DE) >> 1))
@@ -32,12 +33,13 @@ void (*upscale_p)(uint32_t *dst,
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+
 // Support math
 #define Half(A) (((A) >> 1) & 0x7BEF)
 #define Quarter(A) (((A) >> 2) & 0x39E7)
 // Error correction expressions to piece back the lower bits together
-#define RestHalf(A) ((A) & 0x0821)
-#define RestQuarter(A) ((A) & 0x1863)
+#define RestHalf(A) ((A) & 0x0821)  // get RGB last bit
+#define RestQuarter(A) ((A) & 0x1863) // get RGB last two bit
 
 // Error correction expressions for quarters of pixels
 #define Corr1_3(A, B)     Quarter(RestQuarter(A) + (RestHalf(B) << 1) + RestQuarter(B))

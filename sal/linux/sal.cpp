@@ -11,6 +11,14 @@
 #define SNES_WIDTH  256
 //#define SNES_HEIGHT 239
 
+
+#define DINGUX_ALLOW_DOWNSCALING_FILE     "/sys/devices/platform/jz-lcd.0/allow_downscaling"
+#define DINGUX_KEEP_ASPECT_RATIO_FILE     "/sys/devices/platform/jz-lcd.0/keep_aspect_ratio"
+#define DINGUX_INTEGER_SCALING_FILE       "/sys/devices/platform/jz-lcd.0/integer_scaling"
+#define DINGUX_SHARPNESS_UPSCALING_FILE   "/sys/devices/platform/jz-lcd.0/sharpness_upscaling"
+#define DINGUX_SHARPNESS_DOWNSCALING_FILE "/sys/devices/platform/jz-lcd.0/sharpness_downscaling"
+#define DINGUX_BATTERY_CAPACITY_FILE      "/sys/class/power_supply/battery/capacity"
+
 extern u16 IntermediateScreen[];
 SDL_Surface *mScreen = NULL;
 static u32 mSoundThreadFlag = 0;
@@ -277,6 +285,60 @@ void sal_Reset(void) {
 }
 
 
+void set_disable_aspect_ratio() {
+    FILE *f = fopen(DINGUX_KEEP_ASPECT_RATIO_FILE,
+                    "wb");
+    if (!f) return;
+//    char c = n ? 'Y' : 'N';
+    char scale = 'N';
+    fwrite(&scale,
+           1,
+           1,
+           f);
+    fclose(f);
+
+}
+void set_enable_aspect_ratio() {
+    FILE *f = fopen(DINGUX_KEEP_ASPECT_RATIO_FILE,
+                    "wb");
+    if (!f) return;
+//    char c = n ? 'Y' : 'N';
+    char scale = 'Y';
+    fwrite(&scale,
+           1,
+           1,
+           f);
+    fclose(f);
+
+}
+
+void set_enable_integer_scale() {
+
+    FILE *f = fopen(DINGUX_INTEGER_SCALING_FILE,
+                    "wb");
+    if (!f) return;
+//    char c = n ? 'Y' : 'N';
+    char scale = 'Y';
+    fwrite(&scale,
+           1,
+           1,
+           f);
+    fclose(f);
+}
+
+void set_disable_integer_scale() {
+
+    FILE *f = fopen(DINGUX_INTEGER_SCALING_FILE,
+                    "wb");
+    if (!f) return;
+//    char c = n ? 'Y' : 'N';
+    char scale = 'N';
+    fwrite(&scale,
+           1,
+           1,
+           f);
+    fclose(f);
+}
 static unsigned int currentMode = 3;
 
 bool updateVideoMode(bool force) {
@@ -295,15 +357,17 @@ bool updateVideoMode(bool force) {
         }
     }
 
-    sal_VideoClear(0);
-    sal_VideoClear(0);
-    sal_VideoClear(0);
+//    sal_VideoClear(0);
+//    sal_VideoClear(0);
+//    sal_VideoClear(0);
 
 
     switch (mMenuOptions.fullScreen) {
         case 0: // origin
             updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
 //            GFX.Screen = (uint8 *) mScreen->pixels;
+            set_disable_integer_scale();
+            set_enable_aspect_ratio();
             break;
         case 1: // software fast
             updateWindowSize(320, 240, 1);
@@ -315,6 +379,8 @@ bool updateVideoMode(bool force) {
         case 3: // hardware
             updateWindowSize(IPPU.RenderedScreenWidth, 240, 0);
 //            GFX.Screen = (uint8 *) mScreen->pixels;
+            set_disable_integer_scale();
+            set_disable_aspect_ratio();
             break;
     }
     GFX.Screen = (uint8 *) IntermediateScreen;

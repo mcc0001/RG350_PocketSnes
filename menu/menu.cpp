@@ -8,6 +8,7 @@
 #include "memmap.h"
 #include "soundux.h"
 #include "cheats.h"
+#include <iostream>
 
 #define MAX_DISPLAY_CHARS			40
 #define ROM_SELECTOR_SAVE_DEFAULT_DIR	0
@@ -24,6 +25,7 @@ static s32 mMenutileYscroll=0;
 static s32 mTileCounter=0;
 static s32 mQuickSavePresent=0;
 static u32 mPreviewingState=0;
+u16 previewingWidth= 0;
 
 static s8 mMenuText[30][MAX_DISPLAY_CHARS];
 
@@ -812,7 +814,10 @@ static s32 SaveStateSelect(s32 mode)
 			case 5:
 			{
 				u32 DestWidth = 205, DestHeight = 154;
-				sal_VideoBitmapScale(0, 0, SNES_WIDTH, SNES_HEIGHT, DestWidth, DestHeight, SAL_SCREEN_WIDTH - DestWidth, &mTempFb[0], (u16*)sal_VideoGetBuffer()+(SAL_SCREEN_WIDTH*(((202 + 16) - DestHeight)/2))+((262 - DestWidth)/2));
+				sal_VideoBitmapScale(0, 0, previewingWidth , SNES_HEIGHT, DestWidth, DestHeight, SAL_SCREEN_WIDTH - DestWidth, &mTempFb[0], (u16*)sal_VideoGetBuffer()+(SAL_SCREEN_WIDTH*(((202 + 16) - DestHeight)/2))+((262 - DestWidth)/2));
+				#ifdef MAKLOG
+				std::cout << "menu.cpp:818" << " "  << "show bitmap width: " << previewingWidth << std::endl;
+				#endif
 				sal_VideoDrawRect(0, 186, 262, 16, SAL_RGB(22,0,0));
 				if(mode==1) sal_VideoPrint((262-(strlen(MENU_TEXT_LOAD_SAVESTATE)<<3))>>1,190,MENU_TEXT_LOAD_SAVESTATE,SAL_RGB(31,31,31));
 				else if(mode==0) sal_VideoPrint((262-(strlen(MENU_TEXT_OVERWRITE_SAVESTATE)<<3))>>1,190,MENU_TEXT_OVERWRITE_SAVESTATE,SAL_RGB(31,31,31));
@@ -872,12 +877,31 @@ static s32 SaveStateSelect(s32 mode)
 					// GFX.Screen = (uint8 *) sal_VideoGetBuffer();
 					IPPU.RenderThisFrame=TRUE;
 					unsigned int fullScreenSave = mMenuOptions->fullScreen;
-					mMenuOptions->fullScreen = 0;
+					mMenuOptions->fullScreen = 1;
 					S9xMainLoop ();
+                    updateVideoMode(true);
+//					mPreviewingWidth = IPPU.RenderedScreenWidth;
 					mMenuOptions->fullScreen = fullScreenSave;
+//                    updateVideoMode(true);
 					sal_AudioSetMuted(0);
 					mPreviewingState = 0;
 					action=5;
+
+                    mPreviewingState = 1;
+                    sal_AudioSetMuted(1);
+                    GFX.Screen = (uint8 *) &mTempFb[0];
+                    // GFX.Screen = (uint8 *) sal_VideoGetBuffer();
+                    IPPU.RenderThisFrame=TRUE;
+                     fullScreenSave = mMenuOptions->fullScreen;
+                    mMenuOptions->fullScreen = 1;
+                    S9xMainLoop ();
+                    updateVideoMode(true);
+//					mPreviewingWidth = IPPU.RenderedScreenWidth;
+                    mMenuOptions->fullScreen = fullScreenSave;
+//                    updateVideoMode(true);
+                    sal_AudioSetMuted(0);
+                    mPreviewingState = 0;
+                    action=5;
 				}
 				else
 					action=4; // did not load correctly; report an error

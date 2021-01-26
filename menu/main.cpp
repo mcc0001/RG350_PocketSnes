@@ -16,6 +16,7 @@
 #include <iostream>
 
 
+extern u16 previewingWidth;
 #define SNES_SCREEN_WIDTH  256
 #define SNES_SCREEN_HEIGHT 192
 extern struct InternalPPU IPPU;
@@ -166,12 +167,14 @@ bool8_32 S9xDeinitUpdate(int Width,
         LastPAL = PAL;
     }
 #ifdef MAKLOG
-    printf("mode: %d Render w: %d screen.w: %d screen.pitch: %d\n",
-           mMenuOptions.fullScreen, IPPU.RenderedScreenWidth, mScreen->w,
-           mScreen->pitch);
+//    printf("mode: %d Render w: %d screen.w: %d screen.pitch: %d\n",
+//           mMenuOptions.fullScreen, IPPU.RenderedScreenWidth, mScreen->w,
+//           mScreen->pitch);
 #endif
 
     if (!updateVideoMode(false)) return TRUE;
+
+
 
 #ifdef MAKLOG
 //std::cout << "main.cpp:186" << " "  << "update resolution end!!" << std::endl;
@@ -399,9 +402,15 @@ const char *S9xGetFilenameInc(const char *e) {
 
 #define MAX_AUDIO_FRAMESKIP 5
 
+
 void S9xSyncSpeed(void) {
-    if (IsPreviewingState())
+    if (IsPreviewingState()){
+        previewingWidth = IPPU.RenderedScreenWidth;
+        #ifdef MAKLOG
+        std::cout << "main.cpp:410" << " "  << "get render width: " << previewingWidth << std::endl;
+        #endif
         return;
+    }
 
     if (Settings.SkipFrames == AUTO_FRAMERATE) {
         if (sal_AudioGetFramesBuffered() < sal_AudioGetMinFrames()
